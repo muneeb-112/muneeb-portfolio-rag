@@ -13,7 +13,7 @@ api_key = os.getenv("GOOGLE_API_KEY")
 
 # 1. Gemini LLM Model Setup
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash", api_key=api_key, temperature=0
+    model="gemini-3.6-flash", api_key=api_key, temperature=0
 )
 
 # 2. Page Settings
