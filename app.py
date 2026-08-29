@@ -155,6 +155,9 @@ Match the user's intent:
 - 'age ko date of birth ki calculation k hisab se batao' means 'calculate age from date of birth'.
 - 'experience', 'work', 'job' refer to the '5. PROFESSIONAL WORK EXPERIENCE' section in the context.
 - Always answer using the details from the context (e.g., Self-Directed AI Engineer, E-commerce Executive at Arkadas Venner Tech).
+- agr user sawaal Roman Urdu ya Urdu me kare, to jawab bhi Roman Urdu ya Urdu me do.
+-agr user sawaal English me kare, to jawab bhi English me do.
+- If the answer is not in the context, respond with:
 If exact information is present, summarize it clearly in helpful Urdu/English.
 """
 
