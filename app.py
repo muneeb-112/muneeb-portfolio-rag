@@ -166,8 +166,10 @@ if "messages" not in st.session_state:
   st.session_state.messages = []
 
 # Display old messages
+# Display old messages with custom avatars
 for message in st.session_state.messages:
-  with st.chat_message(message["role"]):
+  avatar = "assets/avatar.png" if message["role"] == "assistant" else "👤"
+  with st.chat_message(message["role"], avatar=avatar):
     st.markdown(message["content"])
 
 # User input
