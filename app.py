@@ -1,32 +1,27 @@
-import os
-import streamlit as st
-from langchain_chroma import Chroma
-from langchain_ollama import OllamaEmbeddings, ChatOllama
-from langchain_google_genai import ChatGoogleGenerativeAI
 import base64
+import os
+from langchain_chroma import Chroma
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+import streamlit as st
 
 # Settings
-
 DB_PATH = 'chroma_db'
 COLLECTION_NAME = 'muneeb_portfolio'
-EMBEDDING_MODEL = 'embeddinggemma'
 
+# API Key Load
+api_key = os.getenv("GOOGLE_API_KEY")
+
+# 1. Gemini LLM Model Setup
 llm = ChatGoogleGenerativeAI(
-    model="gemini-3-flash-preview",
-    # Original key ki jagah yeh likhein:
-    api_key = os.getenv("GOOGLE_API_KEY"),
-    temperature=0
+    model="gemini-3-flash-preview", google_api_key=api_key, temperature=0
 )
 
-#Page settings
-
+# 2. Page Settings
 st.set_page_config(
     page_title='MUNEEB ULLAH | AI Portfolio',
     page_icon='assets/avatar.png',
-    layout='centered'
-) 
-
-
+    layout='centered',
+)
 
 
 # Background Image Helper Function
@@ -65,12 +60,12 @@ def set_bg_image(image_path):
     )
 
 
-
-# Function Call (Apni image ka path yahan dein)
+# Function Call
 set_bg_image("assets/bg.png")
-# Page config ke bilkul neechay yeh Custom CSS paste karein:
-# Page config ke bilkul neechay paste karein:
-st.markdown("""
+
+# Custom CSS for Chat Alignment
+st.markdown(
+    """
 <style>
 /* 1. User Message (Right Side Align) */
 div[data-testid="stChatMessage"]:has(div[data-testid="stChatMessageAvatarUser"]),
@@ -99,15 +94,19 @@ div[data-testid="stChatMessage"]:has(div[data-testid="stChatMessageAvatarUser"])
     text-align: right !important;
 }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
-#Title
-
-st.markdown("""<h1 style="background: linear-gradient(45deg, white, gray);
+# Title & Headers
+st.markdown(
+    """<h1 style="background: linear-gradient(45deg, white, gray);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-weight: bold;">MUNEEB ULLAH | AI Portfolio</h1>""", unsafe_allow_html=True)
-# Purani 2 lines ko is se replace karein:
+        font-weight: bold;">MUNEEB ULLAH | AI Portfolio</h1>""",
+    unsafe_allow_html=True,
+)
+
 st.markdown(
     """
     <h3 style="
@@ -115,7 +114,6 @@ st.markdown(
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: bold;
-        margin-left: 40px;
     ">
         Ask me anything about my portfolio!
     </h3>
@@ -128,44 +126,28 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
-#Check database
-
+# Check database
 if not os.path.exists(DB_PATH):
-    st.error('knowledge base not found!')
-    st.info('Run: python create_database.py')
+  st.error("knowledge base not found!")
+  st.info("Run: python create_database.py")
+  st.stop()
 
-    st.stop()
-
-#Embeddings
-
-embeddings = OllamaEmbeddings(
-    model=EMBEDDING_MODEL
+# 3. Google AI Embeddings (Ollama Ki Jagah)
+embeddings = GoogleGenerativeAIEmbeddings(
+    model="models/gemini-embedding-001", google_api_key=api_key
 )
 
 # Load Chroma database
 db = Chroma(
     collection_name=COLLECTION_NAME,
     persist_directory=DB_PATH,
-    embedding_function=embeddings
+    embedding_function=embeddings,
 )
 
-#Retriever
+# Retriever
+retriever = db.as_retriever(search_kwargs={"k": 4})
 
-retriever = db.as_retriever(
-    search_kwargs={
-        'k': 4}
-)
-
-#Ollama Model
-
-#llm = ChatOllama(
- #   model=LLM_MODEL,
-  #  temperature=0
-#)
-
-#system prompt
-
+# System prompt
 SYSTEM_PROMPT = """
 You are an expert portfolio assistant for Muneeb Ullah.
 The context provided is in English, but user questions will often be in Roman Urdu, Urdu, or English.
@@ -176,41 +158,36 @@ Match the user's intent:
 If exact information is present, summarize it clearly in helpful Urdu/English.
 """
 
-#Chat History
+# Chat History
+if "messages" not in st.session_state:
+  st.session_state.messages = []
 
-if 'messages' not in st.session_state:
-    st.session_state.messages = []
-
-#Display old messages
-
+# Display old messages
 for message in st.session_state.messages:
-    with st.chat_message(
-        message["role"]
-    ):
-        st.markdown(message["content"])
+  with st.chat_message(message["role"]):
+    st.markdown(message["content"])
 
-#user input
-
+# User input
 question = st.chat_input("Ask about Muneeb...")
 
 if question:
-    # 1. Save & Display User Message
-    st.session_state.messages.append({"role": "user", "content": question})
-    with st.chat_message("user", avatar="👤"):
-        st.markdown(question)
+  # 1. Save & Display User Message
+  st.session_state.messages.append({"role": "user", "content": question})
+  with st.chat_message("user", avatar="👤"):
+    st.markdown(question)
 
-    # 2. Assistant Processing Block
-    with st.chat_message("assistant", avatar="assets/avatar.png"):
-        with st.spinner('Searching portfolio...'):
-            try:
-                # Retrieve documents
-                documents = retriever.invoke(question)
+  # 2. Assistant Processing Block
+  with st.chat_message("assistant", avatar="assets/avatar.png"):
+    with st.spinner("Searching portfolio..."):
+      try:
+        # Retrieve documents
+        documents = retriever.invoke(question)
 
-                # Create context
-                context = "\n\n".join([doc.page_content for doc in documents])
+        # Create context
+        context = "\n\n".join([doc.page_content for doc in documents])
 
-                # Create prompt
-                prompt = f"""{SYSTEM_PROMPT}
+        # Create prompt
+        prompt = f"""{SYSTEM_PROMPT}
 
 Context:
 {context}
@@ -218,24 +195,22 @@ Context:
 Question: {question}
 Answer:"""
 
-                # Get answer
-                response = llm.invoke(prompt)
+        # Get answer
+        response = llm.invoke(prompt)
 
-                # Clean text extract
-                if isinstance(response.content, list):
-                    final_text = response.content[0].get("text", "")
-                else:
-                    final_text = response.content
+        # Clean text extract
+        if isinstance(response.content, list):
+          final_text = response.content[0].get("text", "")
+        else:
+          final_text = response.content
 
-                # Show answer
-                st.markdown(final_text)
+        # Show answer
+        st.markdown(final_text)
 
-                # Save answer in session history
-                st.session_state.messages.append(
-                    {"role": "assistant", "content": final_text}
-                )
+        # Save answer in session history
+        st.session_state.messages.append(
+            {"role": "assistant", "content": final_text}
+        )
 
-            except Exception as e:
-                st.error(f"Error: {e}")
-
-
+      except Exception as e:
+        st.error(f"Error: {e}")
