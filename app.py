@@ -13,7 +13,7 @@ api_key = os.getenv("GOOGLE_API_KEY")
 
 # 1. Gemini LLM Model Setup
 llm = ChatGoogleGenerativeAI(
-    model="gemini-3-flash-preview", google_api_key=api_key, temperature=0
+    model="gemini-3-flash-preview", api_key=api_key, temperature=0
 )
 
 # 2. Page Settings
@@ -24,7 +24,7 @@ st.set_page_config(
 )
 
 
-# Background Image Helper Function
+# Background Image & Responsive Display Helper Function
 def set_bg_image(image_path):
   if os.path.exists(image_path):
     with open(image_path, "rb") as image_file:
@@ -42,17 +42,48 @@ def set_bg_image(image_path):
             background-attachment: fixed;
         }}
 
-        /* Main Content Box (Right Side Shift) */
-        [data-testid="stMainBlockContainer"], .block-container {{
-            max-width: 55% !important;
-            margin-left: auto !important;
-            margin-right: 4% !important;
-            padding-top: 4rem !important;
-        }}
-
         /* Header Transparent */
         [data-testid="stHeader"] {{
             background-color: rgba(0, 0, 0, 0) !important;
+        }}
+
+        /* ===== DESKTOP DISPLAY (Screen width > 768px) ===== */
+        @media (min-width: 769px) {{
+            [data-testid="stMainBlockContainer"], .block-container {{
+                max-width: 55% !important;
+                margin-left: auto !important;
+                margin-right: 4% !important;
+                padding-top: 4rem !important;
+            }}
+        }}
+
+        /* ===== MOBILE DISPLAY FIX (Screen width <= 768px) ===== */
+        @media (max-width: 768px) {{
+            [data-testid="stMainBlockContainer"], .block-container {{
+                max-width: 95% !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                padding-top: 1rem !important;
+                padding-left: 10px !important;
+                padding-right: 10px !important;
+            }}
+
+            [data-testid="stAppViewContainer"] {{
+                background-position: center top !important;
+            }}
+
+            h1, h3, p {{
+                text-align: center !important;
+                margin-left: 0px !important;
+            }}
+
+            h1 {{
+                font-size: 1.8rem !important;
+            }}
+
+            h3 {{
+                font-size: 1.2rem !important;
+            }}
         }}
         </style>
         """,
@@ -73,7 +104,7 @@ div[data-testid="stChatMessage"]:has(div[aria-label="Chat message from user"]) {
     flex-direction: row-reverse !important;
     text-align: right !important;
     margin-left: auto !important;
-    max-width: 80% !important;
+    max-width: 85% !important;
     background-color: #2b2d42 !important;
     border-radius: 18px 18px 2px 18px !important;
     padding: 10px !important;
@@ -83,7 +114,7 @@ div[data-testid="stChatMessage"]:has(div[aria-label="Chat message from user"]) {
 div[data-testid="stChatMessage"]:has(div[data-testid="stChatMessageAvatarAssistant"]),
 div[data-testid="stChatMessage"]:has(div[aria-label="Chat message from assistant"]) {
     margin-right: auto !important;
-    max-width: 85% !important;
+    max-width: 90% !important;
     background-color: #161b22 !important;
     border-radius: 18px 18px 18px 2px !important;
     padding: 10px !important;
@@ -165,7 +196,6 @@ If exact information is present, summarize it clearly in helpful Urdu/English.
 if "messages" not in st.session_state:
   st.session_state.messages = []
 
-# Display old messages
 # Display old messages with custom avatars
 for message in st.session_state.messages:
   avatar = "assets/avatar.png" if message["role"] == "assistant" else "👤"
