@@ -40,7 +40,7 @@ EMBEDDING_MODEL = "gemini-embedding-2"
 
 # 768 is a good balance between quality and vector storage size.
 # Google recommends 768, 1536, or 3072 dimensions.
-EMBEDDING_DIMENSION = 768
+EMBEDDING_DIMENSION = 3072
 
 
 # -----------------------------
