@@ -13,7 +13,8 @@ EMBEDDING_MODEL = 'embeddinggemma'
 
 llm = ChatGoogleGenerativeAI(
     model="gemini-3-flash-preview",
-    google_api_key="AQ.Ab8RN6K_XqKOajQ5d_z1lbDHJ6FyzrNR3Wbk99FYPAmKfbUvPQ",
+    # Original key ki jagah yeh likhein:
+    api_key = os.getenv("GOOGLE_API_KEY"),
     temperature=0
 )
 
