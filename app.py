@@ -176,7 +176,7 @@ db = Chroma(
 )
 
 # Retriever
-retriever = db.as_retriever(search_kwargs={"k": 4})
+retriever = db.as_retriever(search_kwargs={"k": 6})
 
 # System prompt
 SYSTEM_PROMPT = """
