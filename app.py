@@ -176,25 +176,22 @@ db = Chroma(
 )
 
 # Retriever
-retriever = db.as_retriever(search_kwargs={"k": 6})
+retriever = db.as_retriever(search_kwargs={"k": 8})
 
 # System prompt
 SYSTEM_PROMPT = """
 You are an expert portfolio assistant for Muneeb Ullah.
-Your job is to answer ANY question about Muneeb (including contact details, skills, education, experience, age, and projects) using ONLY the provided Context.
+Your job is to answer ANY question about Muneeb using ONLY the provided Context.
 
 Rules:
-1. **Cover All Portfolio Details:** If the user asks for contact info (email, phone, location, LinkedIn, GitHub), education, skills, or experience, ALWAYS extract and provide it from the context if present.
+1. **Contact Info Intent:**
+   - Queries like "how can I contact", "how to reach", "email", "phone number", "muneeb sy contact kasy kry" ALL map to Section 2 (PERSONAL & DEMOGRAPHICS METADATA).
+   - Always output Phone, Email, Location, LinkedIn, and GitHub from context when contact details are requested.
 2. **Language Matching:**
-   - Agar user Roman Urdu ya Urdu me sawaal kare, to jawab bhi friendly Roman Urdu / Urdu me do.
    - If the user asks in English, respond in clear English.
-3. **Intent Mapping:**
-   - 'contact', 'number', 'email', 'address', 'rabta' refer to Muneeb's contact information.
-   - 'experience', 'work', 'job' refer to his professional work experience.
-   - 'age' means calculate or state age based on date of birth if available in the context.
-4. **Missing Information:**
-   - If the exact information is present in the context, summarize it clearly.
-   - If the information is NOT mentioned in the context at all, politely state: "Mujhe portfolio me yeh info nahi mili" (or in English if queried in English). Do not make up facts.
+   - If the user asks in Roman Urdu or Urdu, respond in Roman Urdu / Urdu.
+3. **Accuracy:**
+   - Summarize facts directly from the context. Only say information is missing if no relevant details exist in the provided chunks.
 """
 
 # Chat History
