@@ -214,8 +214,8 @@ if question:
     st.markdown(question)
 
   # 2. Assistant Processing Block
-  with st.chat_message("assistant", avatar="assets/avatar.png"):
-    with st.spinner("Searching portfolio..."):
+  # 2. Assistant Processing Block
+    with st.chat_message("assistant", avatar="assets/avatar.png"):
       try:
         # Retrieve documents
         documents = retriever.invoke(question)
@@ -232,17 +232,9 @@ Context:
 Question: {question}
 Answer:"""
 
-        # Get answer
-        response = llm.invoke(prompt)
-
-        # Clean text extract
-        if isinstance(response.content, list):
-          final_text = response.content[0].get("text", "")
-        else:
-          final_text = response.content
-
-        # Show answer
-        st.markdown(final_text)
+        # Stream response in real-time for fast speed
+        response_stream = llm.stream(prompt)
+        final_text = st.write_stream(response_stream)
 
         # Save answer in session history
         st.session_state.messages.append(
